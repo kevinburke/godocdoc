@@ -35,7 +35,7 @@ func main() {
 			conn, err := net.Dial("tcp", ":"+p)
 			if err == nil {
 				defer conn.Close()
-				url := fmt.Sprintf("http://localhost:%s", p)
+				url := fmt.Sprintf("http://localhost:%s/pkg", p)
 				if ok := Open(url); !ok {
 					fmt.Println(url)
 				}
