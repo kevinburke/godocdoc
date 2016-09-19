@@ -3,12 +3,13 @@ package main
 import (
 	"flag"
 	"fmt"
+	"go/build"
 	"log"
 	"net"
 	"os"
 	"os/exec"
-	"os/user"
 	"path/filepath"
+	"strings"
 	"time"
 )
 
@@ -22,6 +23,16 @@ func main() {
 		os.Exit(1)
 	}
 
+	path := "/pkg"
+	srcPath := filepath.Join(build.Default.GOPATH, "src")
+	wd, err := os.Getwd()
+	if err == nil && strings.HasPrefix(wd, srcPath) {
+		rel, err := filepath.Rel(srcPath, wd)
+		if err == nil {
+			path = path + "/" + rel
+		}
+	}
+
 	// mostly copied from the godoc/main.go. you can run it in this mode but
 	// godoc/main.go does a lot.
 	// rootfs := gatefs.New(vfs.OS(*goroot), fsGate)
@@ -32,16 +43,12 @@ func main() {
 	// }
 
 	// godoc.CommandLine(os.Stdout, fs, flag.Args())
-	usr, err := user.Current()
-	if err != nil {
-		log.Fatal(err)
-	}
 	go func(p string) {
 		for {
 			conn, err := net.Dial("tcp", ":"+p)
 			if err == nil {
 				defer conn.Close()
-				url := fmt.Sprintf("http://localhost:%s/pkg", p)
+				url := fmt.Sprintf("http://localhost:%s/%s", p, path)
 				if ok := Open(url); !ok {
 					fmt.Println(url)
 				}
@@ -50,7 +57,7 @@ func main() {
 			time.Sleep(100 * time.Millisecond)
 		}
 	}(*port)
-	cmd := exec.Command("godoc", "-http", "localhost:"+*port, "-goroot", filepath.Join(usr.HomeDir, "go"))
+	cmd := exec.Command("godoc", "-http", "localhost:"+*port, "-goroot", build.Default.GOROOT)
 	defer func() {
 		cmd.Process.Kill()
 	}()
