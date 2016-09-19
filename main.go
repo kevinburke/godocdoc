@@ -12,9 +12,15 @@ import (
 	"time"
 )
 
+const Version = "0.1"
+
 func main() {
 	port := flag.String("port", "6060", "Port to listen on")
 	flag.Parse()
+	if flag.NArg() > 0 && flag.Arg(0) == "version" {
+		os.Stderr.WriteString(fmt.Sprintf("godocdoc version %s\n", Version))
+		os.Exit(1)
+	}
 
 	// mostly copied from the godoc/main.go. you can run it in this mode but
 	// godoc/main.go does a lot.
