@@ -13,7 +13,7 @@ import (
 	"time"
 )
 
-const Version = "0.3"
+const Version = "0.4"
 
 func main() {
 	port := flag.String("port", "6060", "Port to listen on")
