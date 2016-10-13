@@ -33,22 +33,12 @@ func main() {
 		}
 	}
 
-	// mostly copied from the godoc/main.go. you can run it in this mode but
-	// godoc/main.go does a lot.
-	// rootfs := gatefs.New(vfs.OS(*goroot), fsGate)
-	// fs.Bind("/", rootfs, "/", vfs.BindReplace)
-
-	// for _, p := range filepath.SplitList(build.Default.GOPATH) {
-	//    fs.Bind("/src", gatefs.New(vfs.OS(p), fsGate), "/src", vfs.BindAfter)
-	// }
-
-	// godoc.CommandLine(os.Stdout, fs, flag.Args())
-	go func(p string) {
+	go func(port, path string) {
 		for {
-			conn, err := net.Dial("tcp", ":"+p)
+			conn, err := net.Dial("tcp", ":"+port)
 			if err == nil {
 				defer conn.Close()
-				url := fmt.Sprintf("http://localhost:%s/%s", p, path)
+				url := fmt.Sprintf("http://localhost:%s%s", port, path)
 				if ok := Open(url); !ok {
 					fmt.Println(url)
 				}
@@ -56,7 +46,7 @@ func main() {
 			}
 			time.Sleep(100 * time.Millisecond)
 		}
-	}(*port)
+	}(*port, path)
 	cmd := exec.Command("godoc", "-http", "localhost:"+*port, "-goroot", build.Default.GOROOT)
 	defer func() {
 		cmd.Process.Kill()
