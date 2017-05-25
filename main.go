@@ -17,6 +17,8 @@ const Version = "1.0"
 
 func main() {
 	port := flag.String("port", "6060", "Port to listen on")
+	o := flag.Bool("o", false, "Open the browser only (don't start godoc)")
+	open := flag.Bool("open", false, "Open the browser only (don't start godoc)")
 	flag.Parse()
 	if flag.NArg() > 0 && flag.Arg(0) == "version" {
 		os.Stderr.WriteString(fmt.Sprintf("godocdoc version %s\n", Version))
@@ -33,12 +35,16 @@ func main() {
 		}
 	}
 
-	go func(port, path string) {
+	url := fmt.Sprintf("http://localhost:%s%s", *port, path)
+	if *o || *open {
+		Open(url)
+		return
+	}
+	go func(port string) {
 		for {
 			conn, err := net.Dial("tcp", ":"+port)
 			if err == nil {
 				defer conn.Close()
-				url := fmt.Sprintf("http://localhost:%s%s", port, path)
 				if ok := Open(url); !ok {
 					fmt.Println(url)
 				}
@@ -46,7 +52,7 @@ func main() {
 			}
 			time.Sleep(100 * time.Millisecond)
 		}
-	}(*port, path)
+	}(*port)
 	cmd := exec.Command("godoc", "-http", "localhost:"+*port, "-goroot", build.Default.GOROOT)
 	defer func() {
 		cmd.Process.Kill()
