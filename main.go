@@ -35,7 +35,12 @@ func main() {
 		}
 	}
 
-	url := fmt.Sprintf("http://localhost:%s%s", *port, path)
+	hostport := "localhost:" + *port
+	_, err = net.LookupHost("godoc")
+	if err == nil {
+		hostport = "godoc"
+	}
+	url := fmt.Sprintf("http://%s%s", hostport, path)
 	if *o || *open {
 		Open(url)
 		return

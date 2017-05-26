@@ -1,9 +1,10 @@
 BUMP_VERSION := $(shell command -v bump_version)
 
-vet:
+lint:
+	megacheck ./...
 	go vet ./...
 
-test: vet
+test: lint
 	go test ./...
 
 release:
