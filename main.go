@@ -10,6 +10,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"syscall"
 	"time"
 )
 
@@ -19,6 +20,7 @@ func main() {
 	port := flag.String("port", "6060", "Port to listen on")
 	o := flag.Bool("o", false, "Open the browser only (don't start godoc)")
 	open := flag.Bool("open", false, "Open the browser only (don't start godoc)")
+	v := flag.Bool("v", false, "Verbose mode")
 	flag.Parse()
 	if flag.NArg() > 0 && flag.Arg(0) == "version" {
 		os.Stderr.WriteString(fmt.Sprintf("godocdoc version %s\n", Version))
@@ -58,13 +60,16 @@ func main() {
 			time.Sleep(100 * time.Millisecond)
 		}
 	}(*port)
-	cmd := exec.Command("godoc", "-http", "localhost:"+*port, "-goroot", build.Default.GOROOT)
-	defer func() {
-		cmd.Process.Kill()
-	}()
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	if err := cmd.Run(); err != nil {
-		log.Fatal(err)
+	godoc, lookErr := exec.LookPath("godoc")
+	if lookErr != nil {
+		log.Fatal(lookErr)
+	}
+	args := []string{godoc, "-http", "localhost:" + *port, "-goroot", build.Default.GOROOT}
+	if *v {
+		args = append(args, "-v")
+	}
+	execErr := syscall.Exec(godoc, args, []string{"GOPATH=" + os.Getenv("GOPATH")})
+	if execErr != nil {
+		log.Fatal(execErr)
 	}
 }
