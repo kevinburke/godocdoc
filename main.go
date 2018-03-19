@@ -10,8 +10,9 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
-	"syscall"
 	"time"
+
+	"golang.org/x/sys/unix"
 )
 
 const Version = "1.1"
@@ -68,7 +69,7 @@ func main() {
 	if *v {
 		args = append(args, "-v")
 	}
-	execErr := syscall.Exec(godoc, args, []string{"GOPATH=" + os.Getenv("GOPATH")})
+	execErr := unix.Exec(godoc, args, []string{"GOPATH=" + os.Getenv("GOPATH")})
 	if execErr != nil {
 		log.Fatal(execErr)
 	}
