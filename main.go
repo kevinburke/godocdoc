@@ -61,15 +61,18 @@ func main() {
 			time.Sleep(100 * time.Millisecond)
 		}
 	}(*port)
-	godoc, lookErr := exec.LookPath("godoc")
-	if lookErr != nil {
-		log.Fatal(lookErr)
+	binary, lookErr := exec.LookPath("golangorg")
+	if err == exec.ErrNotFound {
+		binary, lookErr = exec.LookPath("godoc")
+		if lookErr != nil {
+			log.Fatal(lookErr)
+		}
 	}
-	args := []string{godoc, "-http", "localhost:" + *port, "-goroot", build.Default.GOROOT}
+	args := []string{binary, "-http", "localhost:" + *port, "-goroot", build.Default.GOROOT}
 	if *v {
 		args = append(args, "-v")
 	}
-	execErr := unix.Exec(godoc, args, []string{"GOPATH=" + os.Getenv("GOPATH")})
+	execErr := unix.Exec(binary, args, []string{"GOPATH=" + os.Getenv("GOPATH")})
 	if execErr != nil {
 		log.Fatal(execErr)
 	}
