@@ -61,12 +61,9 @@ func main() {
 			time.Sleep(100 * time.Millisecond)
 		}
 	}(*port)
-	binary, lookErr := exec.LookPath("golangorg")
-	if err == exec.ErrNotFound {
-		binary, lookErr = exec.LookPath("godoc")
-		if lookErr != nil {
-			log.Fatal(lookErr)
-		}
+	binary, lookErr := exec.LookPath("godoc")
+	if lookErr != nil {
+		log.Fatal(lookErr)
 	}
 	args := []string{binary, "-http", "localhost:" + *port, "-goroot", build.Default.GOROOT}
 	if *v {
